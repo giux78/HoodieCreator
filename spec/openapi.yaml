@@ -3,7 +3,7 @@ info:
   title: API Key Example
   version: '1.0'
 servers:
-  - url: /openapi
+  - url: https://hoodie-creator.vercel.app/openapi
 paths:
   /secret:
     get:
@@ -18,14 +18,14 @@ paths:
                 type: string
       security:
         - api_key: []
-  /product:
+  /product:    
     post:
       summary: Buy the product from the image above
       description: Buy the product from the image above
       operationId: app.create_product
       x-openai-isConsequential: true
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -34,8 +34,6 @@ paths:
                 properties:
                   link_stripe:
                     type: string
-        302:
-          description: OK
       requestBody:
         description: base64 image
         required: true
@@ -47,8 +45,6 @@ paths:
                 imagebase64:
                   type: string
                   format: base64
-      security:
-        - api_key: []
 components:
   securitySchemes:
     api_key:

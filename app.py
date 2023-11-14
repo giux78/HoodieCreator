@@ -22,7 +22,6 @@ def get_secret(user) -> str:
     return f"You are {user} and the secret is 'wbevuec'"
 
 def create_product(user) -> str:
-    console.log('call')
     return { 'link_stripe' : 'test'}
 
 
