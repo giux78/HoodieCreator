@@ -1,0 +1,97 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "API Key Example",
+      "version": "1.0"
+    },
+    "servers": [
+      {
+        "url": "/openapi"
+      }
+    ],
+    "paths": {
+      "/secret": {
+        "get": {
+          "summary": "Return secret string",
+          "operationId": "app.get_secret",
+          "responses": {
+            "200": {
+              "description": "secret response",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "api_key": []
+            }
+          ]
+        }
+      },
+      "/product": {
+        "post": {
+          "summary": "Buy the product from the image above",
+          "description": "Buy the product from the image above",
+          "operationId": "app.create_product",
+          "x-openai-isConsequential": true,
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "link_stripe": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "302": {
+              "description": "OK"
+            }
+          },
+          "requestBody": {
+            "description": "base64 image",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imagebase64": {
+                      "type": "string",
+                      "format": "base64"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "api_key": []
+            }
+          ]
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "api_key": {
+          "type": "apiKey",
+          "name": "X-Auth",
+          "in": "header",
+          "x-apikeyInfoFunc": "app.apikey_auth"
+        }
+      }
+    }
+  }

@@ -21,11 +21,13 @@ def apikey_auth(token, required_scopes):
 def get_secret(user) -> str:
     return f"You are {user} and the secret is 'wbevuec'"
 
+def create_product(user) -> str:
+    console.log('call')
+    return { 'link_stripe' : 'test'}
+
 
 app = connexion.FlaskApp(__name__, specification_dir="spec")
-app.add_api("openapi.yaml")
-app.add_api("swagger.yaml")
-
+app.add_api("openapi.json")
 
 if __name__ == "__main__":
     app.run(f"{Path(__file__).stem}:app", port=80)
