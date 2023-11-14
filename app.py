@@ -28,4 +28,4 @@ app.add_api("swagger.yaml")
 
 
 if __name__ == "__main__":
-    app.run(f"{Path(__file__).stem}:app", port=8080)
+    app.run(f"{Path(__file__).stem}:app", port=80)
