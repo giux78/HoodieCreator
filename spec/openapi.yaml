@@ -35,7 +35,7 @@ paths:
                   link_stripe:
                     type: string
       requestBody:
-        description: base64 image
+        description: base64 of the last image generated
         required: true
         content:
           application/json:

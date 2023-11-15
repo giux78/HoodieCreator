@@ -6,8 +6,11 @@ from pathlib import Path
 import connexion
 from connexion.exceptions import OAuthProblem
 
-TOKEN_DB = {"asdf1234567890": {"uid": 100}}
+from PIL import Image
+from io import BytesIO
+import base64
 
+TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 
 def apikey_auth(token, required_scopes):
     info = TOKEN_DB.get(token, None)
@@ -22,6 +25,10 @@ def get_secret(user) -> str:
     return f"You are {user} and the secret is 'wbevuec'"
 
 def create_product(user) -> str:
+    body = connexion.request.json
+    b64 = body['imagebase64']
+    im = Image.open(BytesIO(base64.b64decode(b64)))
+    im.save('./data/test.png')
     return { 'link_stripe' : 'test'}
 
 
