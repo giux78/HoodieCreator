@@ -10,4 +10,4 @@ img3 = img2.resize((300,300))
 # simulating an raster overlay 
 img1.paste(img3, (250,280)) 
   
-img1.show() 
+img1.show()

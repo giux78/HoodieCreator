@@ -40,11 +40,25 @@ paths:
         content:
           application/json:
             schema:
+              required:
+                - imagebase64
+                - color
               type: object
               properties:
                 imagebase64:
                   type: string
                   format: base64
+                color:
+                  description: the color of the hoodie or tshirt
+                  type: string
+                  
+      security:
+        - api_key: []
+  /static/{filename}:
+    get:
+      parameters:
+        - name: filename
+          in: path
 components:
   securitySchemes:
     api_key:
@@ -52,4 +66,3 @@ components:
       name: X-Auth
       in: header
       x-apikeyInfoFunc: app.apikey_auth
-

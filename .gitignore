@@ -19,3 +19,5 @@ src/
 poetry.lock
 .DS_Store
 .vercel
+.env*
+.env
