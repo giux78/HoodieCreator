@@ -60,7 +60,7 @@
             }
           },
           "requestBody": {
-            "description": "base64 image",
+            "description": "base64 image test example",
             "required": true,
             "content": {
               "application/json": {
