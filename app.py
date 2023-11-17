@@ -19,6 +19,9 @@ import io
 from openai import OpenAI
 from PIL import ImageFile
 import urllib.request
+import uuid
+
+ 
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -61,12 +64,15 @@ def create_product(user, body) -> str:
     color = body['color']
     name = body['name']
 
+    if not name:
+        name = str(uuid.uuid4())[:8]
+
     urllib.request.urlretrieve( 
         image_url,
-        "test.png"
+        f"{name}.png"
         ) 
   
-    im = Image.open("test.png") 
+    im = Image.open(f"{name}.png") 
 
     #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(r"./data/hoodie-black-retro.png") 
@@ -75,7 +81,7 @@ def create_product(user, body) -> str:
     imgbk.paste(img3, (250,280)) 
 
     ENV_URL = os.getenv('ENV_URL')
-    image_url = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}'
+    image_url = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/f"{name}.png"'
     #image_front = f'{ENV_URL}/static/hoodie-black-front.png'
     print(image_url)
     description_stripe = 'hoodie'
