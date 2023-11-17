@@ -43,6 +43,7 @@ paths:
               required:
                 - imagebase64
                 - color
+                - name
               type: object
               properties:
                 imagebase64:
@@ -50,6 +51,9 @@ paths:
                   format: base64
                 color:
                   description: the color of the hoodie or tshirt
+                  type: string
+                name:
+                  description: the name to give
                   type: string
       security:
         - api_key: []
