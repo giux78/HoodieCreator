@@ -16,11 +16,11 @@ import stripe
 import flask
 import boto3
 import io
+from openai import OpenAI
+from PIL import ImageFile
 
 
-s3 = boto3.client('s3',
-    aws_access_key_id=os.getenv('AWS_SERVER_PUBLIC_KEY'),
-    aws_secret_access_key=os.getenv('AWS_SERVER_SECRET_KEY') )
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 
@@ -41,6 +41,20 @@ def apikey_auth(token, required_scopes):
 def get_secret(user) -> str:
     return f"You are {user} and the secret is 'wbevuec'"
 
+def create_image(user, body):
+    prompt = body['prompt']
+
+    response = openai_client.images.generate(
+        model="dall-e-3",
+        prompt=prompt,
+        size="1024x1024",
+        quality="standard",
+        n=1,
+    )
+
+    image_url = response.data[0].url
+    return {"image_url" : image_url }
+
 def create_product(user, body) -> str:
     b64 = body['imagebase64']
     color = body['color']
@@ -50,7 +64,6 @@ def create_product(user, body) -> str:
     imgbk = Image.open(r"./data/hoodie-black-retro.png") 
 
     img3 = im.resize((300,300))
-  
     imgbk.paste(img3, (250,280)) 
 
     ENV_URL = os.getenv('ENV_URL')
@@ -81,7 +94,7 @@ def create_product(user, body) -> str:
     try:
         product = stripe.Product.create(name=name, 
                                 description=description_stripe, 
-                                images=[image_url, 'https://hoodie-creator.s3.eu-west-1.amazonaws.com/test.png'],   
+                                images=[image_url, 'https://hoodie-creator.s3.eu-west-1.amazonaws.com/hoodie-black-front.png'],   
                                 default_price_data={"unit_amount": 8990, "currency": "eur"},
                                 metadata=metadata_stripe)
         print(product)
@@ -114,8 +127,14 @@ def create_product(user, body) -> str:
     return  {'link_stripe' : checkout_session.url}
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
-app.add_api("openapi.json")
+app.add_api("openapi.yaml")
 load_dotenv()
+
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
+
+s3 = boto3.client('s3',
+    aws_access_key_id=os.getenv('AWS_SERVER_PUBLIC_KEY'),
+    aws_secret_access_key=os.getenv('AWS_SERVER_SECRET_KEY') )
 
 stripe.api_key  = os.getenv('STRIPE_SECRET_KEY')
 

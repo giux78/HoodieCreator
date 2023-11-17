@@ -51,14 +51,52 @@ paths:
                 color:
                   description: the color of the hoodie or tshirt
                   type: string
-                  
+      security:
+        - api_key: []
+  /generate_image:    
+    post:
+      summary: Generate an image form the prompt
+      description: Buy the product from the image above
+      operationId: app.create_image
+      x-openai-isConsequential: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  image_url:
+                    type: string
+      requestBody:
+        description: the prompt to create a new image
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - prompt
+              type: object
+              properties:
+                prompt:
+                  description: the prompt to genereate a new image
+                  type: string
       security:
         - api_key: []
   /static/{filename}:
     get:
+      operationId: app.get
       parameters:
         - name: filename
           in: path
+          description: ID of pet to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully loaded html page.
 components:
   securitySchemes:
     api_key:
