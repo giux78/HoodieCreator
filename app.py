@@ -62,7 +62,7 @@ def create_product(user, body) -> str:
     name = body['name']
 
     urllib.request.urlretrieve( 
-        "image_url"
+        image_url,
         "test.png"
         ) 
   
