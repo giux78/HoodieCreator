@@ -1,13 +1,11 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "app.py", "use": "@vercel/python", "maxDuration": 300  }
+  ],
   "routes": [
     { "src": "/(.*)", "dest": "/app.py"}
   ],
-  "functions": {
-    "app.py": {
-      "maxDuration": 300 
-    }
-  },
   "env": {
     "APP_MODULE": "app:app"
   }
