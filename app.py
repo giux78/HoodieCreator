@@ -56,7 +56,7 @@ def create_image(user, body):
     return {"image_url" : image_url }
 
 def create_product(user, body) -> str:
-    b64 = body['imagebase64']
+    b64 = body['image_url']
     color = body['color']
     name = body['name']
 

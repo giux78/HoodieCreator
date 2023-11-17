@@ -35,20 +35,20 @@ paths:
                   link_stripe:
                     type: string
       requestBody:
-        description: base64 of the last image generated
+        description: the image with name color and base64 representation
         required: true
         content:
           application/json:
             schema:
               required:
-                - imagebase64
+                - image_url
                 - color
                 - name
               type: object
               properties:
-                imagebase64:
+                image_url:
+                  description: the url of the image created
                   type: string
-                  format: base64
                 color:
                   description: the color of the hoodie or tshirt
                   type: string

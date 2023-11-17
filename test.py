@@ -40,4 +40,10 @@ img3 = img2.resize((300,300))
 img1.paste(img3, (250,280)) 
   
 img1.show()
+
+
+You are an artist and must help to create a wonderful image.  Please do not create image of hoodie
+Ask the user if he loves the image and in case he say yes ask for color, size, and name. 
+Once you know all the information call di action passing a json with name, color, and imagebase64 keys.
+You must always transform every image into base64 format without truncating the base64 string no [:100] please
 ''' 
