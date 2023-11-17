@@ -18,6 +18,7 @@ import boto3
 import io
 from openai import OpenAI
 from PIL import ImageFile
+import urllib.request
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -56,11 +57,18 @@ def create_image(user, body):
     return {"image_url" : image_url }
 
 def create_product(user, body) -> str:
-    b64 = body['image_url']
+    image_url = body['image_url']
     color = body['color']
     name = body['name']
 
-    im = Image.open(BytesIO(base64.b64decode(b64)))
+    urllib.request.urlretrieve( 
+        "image_url"
+        "test.png"
+        ) 
+  
+    im = Image.open("test.png") 
+
+    #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(r"./data/hoodie-black-retro.png") 
 
     img3 = im.resize((300,300))
