@@ -69,10 +69,10 @@ def create_product(user, body) -> str:
 
     urllib.request.urlretrieve( 
         image_url,
-        f"{name}.png"
+        f"/tmp/{name}.png"
         ) 
   
-    im = Image.open(f"{name}.png") 
+    im = Image.open(f"/tmp/{name}.png") 
 
     #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(r"./data/hoodie-black-retro.png") 
