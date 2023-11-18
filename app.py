@@ -99,7 +99,7 @@ def create_product(user, body) -> str:
     s3.upload_fileobj(
         in_mem_file, # This is what i am trying to upload
         'hoodie-creator',
-        name,
+        f"{name}.png",
         ExtraArgs={
             'ACL': 'public-read',
             'ContentType': 'image/png'
