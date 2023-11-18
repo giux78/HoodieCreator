@@ -81,7 +81,7 @@ def create_product(user, body) -> str:
     imgbk.paste(img3, (250,280)) 
 
     ENV_URL = os.getenv('ENV_URL')
-    image_url = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/"{name}.png"'
+    image_url = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}.png'
     #image_front = f'{ENV_URL}/static/hoodie-black-front.png'
     print(image_url)
     description_stripe = 'hoodie'
