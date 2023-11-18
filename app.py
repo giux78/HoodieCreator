@@ -62,10 +62,10 @@ def create_image(user, body):
 def create_product(user, body) -> str:
     image_url = body['image_url']
     color = body['color']
-    name = body['name']
+    size = body['size']
+    prompt = body['prompt']
 
-    if not name:
-        name = str(uuid.uuid4())[:8]
+    name = str(uuid.uuid4())[:8]
 
     urllib.request.urlretrieve( 
         image_url,
@@ -86,9 +86,10 @@ def create_product(user, body) -> str:
     print(image_url)
     description_stripe = 'hoodie'
     
-    metadata_stripe = {"size" : "M", 
-                        "color" :  'black', 
+    metadata_stripe = {"size" : size, 
+                        "color" :  color, 
                         "url_image" : image_url,
+                        "prompt" : prompt
                         }
     
     in_mem_file = io.BytesIO()
@@ -111,7 +112,6 @@ def create_product(user, body) -> str:
                                 images=[image_url, 'https://hoodie-creator.s3.eu-west-1.amazonaws.com/hoodie-black-front.png'],   
                                 default_price_data={"unit_amount": 8990, "currency": "eur"},
                                 metadata=metadata_stripe)
-        print(product)
         product_id = product['id']
         price= stripe.Price.create(
             unit_amount=8990,

@@ -43,7 +43,8 @@ paths:
               required:
                 - image_url
                 - color
-                - name
+                - prompt
+                - size
               type: object
               properties:
                 image_url:
@@ -52,8 +53,11 @@ paths:
                 color:
                   description: the color of the hoodie or tshirt
                   type: string
-                name:
-                  description: the name to give
+                prompt:
+                  description: the prompt used to create the image
+                  type: string
+                size:
+                  description: the prompt used to create the image
                   type: string
       security:
         - api_key: []
