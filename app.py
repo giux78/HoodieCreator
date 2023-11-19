@@ -83,11 +83,12 @@ def create_product(user, body) -> str:
     img_front = Image.open(f"./data/hoodie-{color}-front.png")
     img_qr = Image.open(r"./data/qrcode_test.png")
     img_qr = img_qr.resize((50,50))
-    img_front.paste(img3, (375,250)) 
+    img_front.paste(img_qr, (375,250)) 
 
     ENV_URL = os.getenv('ENV_URL')
     image_url = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}.png'
     #image_front = f'{ENV_URL}/static/hoodie-black-front.png'
+    image__url_front = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}-front.png'
     print(image_url)
     description_stripe = 'hoodie'
     
@@ -128,7 +129,7 @@ def create_product(user, body) -> str:
     try:
         product = stripe.Product.create(name=name, 
                                 description=description_stripe, 
-                                images=[image_url, f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}-front.png'],   
+                                images=[image_url, image_front],   
                                 default_price_data={"unit_amount": 8990, "currency": "eur"},
                                 metadata=metadata_stripe)
         product_id = product['id']
@@ -157,7 +158,9 @@ def create_product(user, body) -> str:
     except Exception as e:
         print(str(e))
         return str(e)
-    return  {'link_stripe' : checkout_session.url}
+    return  {'link_stripe' : checkout_session.url, 
+             "product_image_front" : image__url_front,
+             "product_image_back" : image_url}
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
 app.add_api("openapi.yaml")
