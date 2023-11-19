@@ -82,10 +82,7 @@ def create_product(user, body) -> str:
 
     img_front = Image.open(f"./data/hoodie-{color}-front.png")
     img_qr = Image.open(r"./data/qrcode_test.png")
-
     img_qr = img_qr.resize((50,50))
-    img_front.img_qr(img3, (375,250)) 
-
     img_front.paste(img3, (375,250)) 
 
     ENV_URL = os.getenv('ENV_URL')
@@ -101,7 +98,7 @@ def create_product(user, body) -> str:
                         }
     
     in_mem_file = io.BytesIO()
-    img_front.save(in_mem_file, format=imgbk.format)
+    imgbk.save(in_mem_file, format=imgbk.format)
     in_mem_file.seek(0)
 
     s3.upload_fileobj(
@@ -115,7 +112,7 @@ def create_product(user, body) -> str:
     )
 
     in_mem_file = io.BytesIO()
-    imgbk.save(in_mem_file, format=imgbk.format)
+    img_front.save(in_mem_file, format=imgbk.format)
     in_mem_file.seek(0)
 
     s3.upload_fileobj(
