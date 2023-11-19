@@ -129,7 +129,7 @@ def create_product(user, body) -> str:
     try:
         product = stripe.Product.create(name=name, 
                                 description=description_stripe, 
-                                images=[image_url, image_front],   
+                                images=[image_url, image__url_front],   
                                 default_price_data={"unit_amount": 8990, "currency": "eur"},
                                 metadata=metadata_stripe)
         product_id = product['id']
