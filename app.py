@@ -75,10 +75,18 @@ def create_product(user, body) -> str:
     im = Image.open(f"/tmp/{name}.png") 
 
     #im = Image.open(BytesIO(base64.b64decode(b64)))
-    imgbk = Image.open(r"./data/hoodie-black-retro.png") 
+    imgbk = Image.open(f"./data/hoodie-{color}-back.png") 
 
     img3 = im.resize((300,300))
     imgbk.paste(img3, (250,280)) 
+
+    img_front = Image.open(f"./data/hoodie-{color}-front.png")
+    img_qr = Image.open(r"./data/qrcode_test.png")
+
+    img_qr = img_qr.resize((50,50))
+    img_front.img_qr(img3, (375,250)) 
+
+    img_front.paste(img3, (375,250)) 
 
     ENV_URL = os.getenv('ENV_URL')
     image_url = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}.png'
@@ -93,7 +101,7 @@ def create_product(user, body) -> str:
                         }
     
     in_mem_file = io.BytesIO()
-    imgbk.save(in_mem_file, format=imgbk.format)
+    img_front.save(in_mem_file, format=imgbk.format)
     in_mem_file.seek(0)
 
     s3.upload_fileobj(
@@ -105,11 +113,25 @@ def create_product(user, body) -> str:
             'ContentType': 'image/png'
         }
     )
+
+    in_mem_file = io.BytesIO()
+    imgbk.save(in_mem_file, format=imgbk.format)
+    in_mem_file.seek(0)
+
+    s3.upload_fileobj(
+        in_mem_file, # This is what i am trying to upload
+        'hoodie-creator',
+        f"{name}-front.png",
+        ExtraArgs={
+            'ACL': 'public-read',
+            'ContentType': 'image/png'
+        }
+    )
     
     try:
         product = stripe.Product.create(name=name, 
                                 description=description_stripe, 
-                                images=[image_url, 'https://hoodie-creator.s3.eu-west-1.amazonaws.com/hoodie-black-front.png'],   
+                                images=[image_url, f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}-front.png'],   
                                 default_price_data={"unit_amount": 8990, "currency": "eur"},
                                 metadata=metadata_stripe)
         product_id = product['id']
