@@ -96,19 +96,35 @@ paths:
                   type: string
       security:
         - api_key: []
+  /privacy_policy:
+    get:
+      operationId: app.get_privacy_policy
+      summary: Return the privacy policy
+      description: Return the privacy policy gfor the website
+      responses:
+        '200':
+          description: Successfully returned the provacy policy.
+          content:
+            text/html:
+              schema:
+                type: string
   /static/{filename}:
     get:
       operationId: app.get
       parameters:
         - name: filename
           in: path
-          description: ID of pet to return
+          description: filename to return from static
           required: true
           schema:
             type: string
       responses:
         '200':
           description: Successfully loaded html page.
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   securitySchemes:
     api_key:
