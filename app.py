@@ -21,15 +21,12 @@ from PIL import ImageFile
 import urllib.request
 import uuid
 
- 
-
-
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 
 def get(filename):
-    response = flask.send_from_directory('static', filename)
+    response = flask.send_from_directory('static', filename, mimetype="text/html")
     response.direct_passthrough = False
     return response
 
@@ -58,6 +55,8 @@ def create_image(user, body):
 
     image_url = response.data[0].url
     return {"image_url" : image_url }
+
+
 
 def create_product(user, body) -> str:
     image_url = body['image_url']
