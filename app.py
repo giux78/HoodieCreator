@@ -31,11 +31,11 @@ def get(filename):
     return response
 
 def get_privacy_policy():
-    response = flask.send_from_directory('static', 'privacy_policy.html', mimetype="text/html")    #response.direct_passthrough = False
-    print("TEST")
-    return response
-    #html = "<html><body>This is HTML</body></html>"
-    #return flask.Response(html, mimetype="text/html", status=200)
+    #response = flask.send_from_directory('static', 'privacy_policy.html', mimetype="text/html")    #response.direct_passthrough = False
+    #print("TEST")
+    #return response
+    html = "<html><body>This is HTML</body></html>"
+    return flask.Response(html, mimetype="text/html", status=200)
 
 def apikey_auth(token, required_scopes):
     info = TOKEN_DB.get(token, None)
