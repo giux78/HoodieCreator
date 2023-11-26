@@ -20,6 +20,7 @@ from openai import OpenAI
 from PIL import ImageFile
 import urllib.request
 import uuid
+from flask import current_app
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -34,8 +35,8 @@ def get_privacy_policy():
     #response = flask.send_from_directory('static', 'privacy_policy.html', mimetype="text/html")    #response.direct_passthrough = False
     #print("TEST")
     #return response
-    html = "<html><body>This is HTML</body></html>"
-    return flask.Response(html, mimetype="text/html", status=200)
+    #html = "<html><body>This is HTML</body></html>"
+    return current_app.send_static_file('privacy_policy.html')
 
 def apikey_auth(token, required_scopes):
     info = TOKEN_DB.get(token, None)
