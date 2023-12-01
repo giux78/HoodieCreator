@@ -21,6 +21,8 @@ from PIL import ImageFile
 import urllib.request
 import uuid
 from flask import current_app
+import tweepy
+from utils import x
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -63,8 +65,6 @@ def create_image(user, body):
 
     image_url = response.data[0].url
     return {"image_url" : image_url }
-
-
 
 def create_product(user, body) -> str:
     image_url = body['image_url']
@@ -168,6 +168,23 @@ def create_product(user, body) -> str:
     return  {'link_stripe' : checkout_session.url, 
              "product_image_front" : image__url_front,
              "product_image_back" : image_url}
+
+def tweet_campaigns(user, body):
+    media_id = None
+    text = body['tweet']
+    if 'image_url' in body:
+        print(body['image_url'])
+        media_obj = x.upload_media(body['image_url'])
+        media_id = media_obj['media']['media_ids']
+        x_client.create_tweet(
+            text=text,
+            media_ids= media_id
+        )
+    else: 
+        x_client.create_tweet(
+            text=text
+        )  
+    return {'status' : 'OK'}
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
 app.add_api("openapi.yaml")
@@ -180,6 +197,11 @@ s3 = boto3.client('s3',
     aws_secret_access_key=os.getenv('AWS_SERVER_SECRET_KEY') )
 
 stripe.api_key  = os.getenv('STRIPE_SECRET_KEY')
+
+x_client = tweepy.Client(
+    consumer_key=os.getenv('X_CONSUMER_KEY'), consumer_secret=os.getenv('X_CONSUMER_SECRET'),
+    access_token=os.getenv('X_ACCESS_TOKEN'), access_token_secret=os.getenv('X_ACCESS_TOKEN_SECRET')
+)
 
 if __name__ == "__main__":
     app.run(f"{Path(__file__).stem}:app", port=80)

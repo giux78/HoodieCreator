@@ -21,3 +21,4 @@ poetry.lock
 .vercel
 .env*
 .env
+test.py

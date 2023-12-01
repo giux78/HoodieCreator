@@ -96,6 +96,38 @@ paths:
                   type: string
       security:
         - api_key: []
+  /tweet_campaigns:    
+    post:
+      summary: Publish a series of tweets
+      description: Publish a serie of tweets 
+      operationId: app.tweet_campaigns
+      x-openai-isConsequential: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+      requestBody:
+        description: the array of tweets to publish
+        required: true
+        content:
+          application/json:
+            schema:
+                type: object
+                properties:
+                  image_url:
+                    type: string 
+                    description: an image to attach to the tweet
+                  tweet: 
+                    type: string
+                    description: the text to publish as tweet
+      security:
+        - api_key: []
   /privacy_policy:
     get:
       operationId: app.get_privacy_policy
