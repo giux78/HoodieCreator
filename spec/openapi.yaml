@@ -98,8 +98,8 @@ paths:
         - api_key: []
   /tweet_campaigns:    
     post:
-      summary: Publish a series of tweets
-      description: Publish a serie of tweets 
+      summary: Publish a tweet for me 
+      description: Publish a tweet for me 
       operationId: app.tweet_campaigns
       x-openai-isConsequential: true
       responses:
