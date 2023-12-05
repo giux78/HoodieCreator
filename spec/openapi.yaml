@@ -113,16 +113,18 @@ paths:
                   status:
                     type: string
       requestBody:
-        description: the array of tweets to publish
+        description: an object representing the tweet to publish 
         required: true
         content:
           application/json:
             schema:
+                required:
+                  - tweet
                 type: object
                 properties:
-                  image_url:
+                  orgin_url:
                     type: string 
-                    description: an image to attach to the tweet
+                    description: if provided the url where the information has been extracted
                   tweet: 
                     type: string
                     description: the text to publish as tweet

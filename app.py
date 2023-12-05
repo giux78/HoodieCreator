@@ -172,13 +172,13 @@ def create_product(user, body) -> str:
 def tweet_campaigns(user, body):
     media_id = None
     text = body['tweet']
-    if 'image_url' in body:
-        print(body['image_url'])
-        media_obj = x.upload_media(body['image_url'])
-        media_id = media_obj['media']['media_ids']
+    if 'origin_url' in body:
+        print(body['origin_url'])
+        #media_obj = x.upload_media(body['image_url'])
+        #media_id = media_obj['media']['media_ids']
         x_client.create_tweet(
-            text=text,
-            media_ids= media_id
+            text=text + " " + body['origin_url'],
+        #    media_ids= media_id
         )
     else: 
         x_client.create_tweet(
