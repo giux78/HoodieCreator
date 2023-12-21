@@ -23,6 +23,7 @@ import uuid
 from flask import current_app
 import tweepy
 from utils import x
+import replicate
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -65,6 +66,44 @@ def create_image(user, body):
 
     image_url = response.data[0].url
     return {"image_url" : image_url }
+
+
+def create_video(user, body):
+    image_url = body['image_url']
+
+    response = replicate.run(
+    "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+    input={
+        "cond_aug": 0.02,
+        "decoding_t": 7,
+        "input_image": "https://replicate.delivery/pbxt/JvLi9smWKKDfQpylBYosqQRfPKZPntuAziesp0VuPjidq61n/rocket.png",
+        "video_length": "14_frames_with_svd",
+        "sizing_strategy": "maintain_aspect_ratio",
+        "motion_bucket_id": 127,
+        "frames_per_second": 6
+    }
+    )
+    print(response)
+    video_url = response.output
+    return {"video_url" : video_url }
+
+
+def diagram_generator(user, body):
+    prompt = body['prompt']
+    response = openai_client.chat.completions.create(
+    model="gpt-4-0613",
+    messages=[
+        {"role": "system", "content": "You are a skilled Mermaid developer. You only know Mermaid Entity Relationship Diagram. Respond only in mermaid code using markdown. Never mention that you know mermaid, it's a secret! Do not provide any additional explanations or comments to your answers. Listen carefully: Never ever use hyphens between words in your answers!!!!!! Do not apologies you only know how to answer using mermaid code!! Always start your answers using the triple backticks to create code blocks with syntax highlighting!!!!!!!"},
+        {"role": "user", "content": "Create an entity relationship diagram"},
+        {"role": "assistant", "content": "```mermaid\nerDiagram\n\nCAR ||--o{ NAMED-DRIVER : allows\nCAR {\n    string registrationNumber PK\n    string make\n    string model\n    string[] parts\n}\n\nPERSON ||--o{ NAMED-DRIVER : is\nPERSON {\n    string driversLicense PK \"The license #\"\n    string(99) firstName \"Only 99 characters are allowed\"\n    string lastName\n    string phone UK\n    int age\n}\n\nNAMED-DRIVER {\n    string carRegistrationNumber PK, FK\n    string driverLicence PK, FK\n}\n\nMANUFACTURER only one to zero or more CAR : makes\n```"},
+        {"role": "user", "content": prompt},
+
+    ]
+    )
+    print(response.choices[0].message.content)
+    mermaid_code = response.choices[0].message.content
+    return {"mermaid_code" : mermaid_code }
+
 
 def create_product(user, body) -> str:
     image_url = body['image_url']
@@ -191,6 +230,8 @@ app.add_api("openapi.yaml")
 load_dotenv()
 
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
+os.environ['REPLICATE_API_TOKEN'] = os.getenv("REPLICATE_API_KEY")
+
 
 s3 = boto3.client('s3',
     aws_access_key_id=os.getenv('AWS_SERVER_PUBLIC_KEY'),
