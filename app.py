@@ -76,7 +76,7 @@ def create_video(user, body):
     input={
         "cond_aug": 0.02,
         "decoding_t": 7,
-        "input_image": "https://replicate.delivery/pbxt/JvLi9smWKKDfQpylBYosqQRfPKZPntuAziesp0VuPjidq61n/rocket.png",
+        "input_image": image_url,
         "video_length": "14_frames_with_svd",
         "sizing_strategy": "maintain_aspect_ratio",
         "motion_bucket_id": 127,
@@ -84,7 +84,7 @@ def create_video(user, body):
     }
     )
     print(response)
-    video_url = response.output
+    video_url = response
     return {"video_url" : video_url }
 
 
