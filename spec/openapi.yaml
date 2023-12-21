@@ -96,6 +96,68 @@ paths:
                   type: string
       security:
         - api_key: []
+  /generate_diagram:    
+      post:
+        summary: Generate a diagram from the provided prompt
+        description: Generate a diagram from the prompt provided
+        operationId: app.diagram_generator
+        x-openai-isConsequential: true
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    mermaid_code:
+                      type: string
+        requestBody:
+          description: the prompt to create a new diagram using mermaid code
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - prompt
+                type: object
+                properties:
+                  prompt:
+                    description: the prompt used to genereate a diagram written in mermaid code
+                    type: string
+        security:
+          - api_key: []
+  /generate_video:    
+    post:
+      summary: Generate a video from the provided image
+      description: Generate a video from the image provided
+      operationId: app.create_video
+      x-openai-isConsequential: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  video_url:
+                    type: string
+      requestBody:
+        description: the image url to create a new video
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - image_url
+              type: object
+              properties:
+                image_url:
+                  description: the url of the image to genereate a new video from
+                  type: string
+      security:
+        - api_key: []
   /tweet_campaigns:    
     post:
       summary: Publish a tweet for me 
