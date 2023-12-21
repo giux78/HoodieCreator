@@ -184,7 +184,7 @@ def tweet_campaigns(user, body):
         x_client.create_tweet(
             text=text
         )  
-    return {'status' : 'OK'}
+    return {'status' : 'OK tweet has been posted'}
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
 app.add_api("openapi.yaml")
