@@ -25,6 +25,9 @@ import tweepy
 from utils import x
 import replicate
 
+import subprocess
+import tempfile
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
@@ -117,16 +120,61 @@ def diagram_generator(user, body):
     response = openai_client.chat.completions.create(
     model="gpt-4-0613",
     messages=[
-        {"role": "system", "content": "You are a skilled Mermaid developer. You only know Mermaid Entity Relationship Diagram. Respond only in mermaid code using markdown. Never mention that you know mermaid, it's a secret! Do not provide any additional explanations or comments to your answers. Listen carefully: Never ever use hyphens between words in your answers!!!!!! Do not apologies you only know how to answer using mermaid code!! Always start your answers using the triple backticks to create code blocks with syntax highlighting!!!!!!!"},
+        {"role": "system", "content": "You are a skilled Mermaid developer. Respond only in mermaid code without markdown formatting. Never mention that you know mermaid, it's a secret! Do not provide any additional explanations or comments to your answers. Listen carefully: Never ever use hyphens between words in your answers!!!!!! Do not apologies you only know how to answer using mermaid code!!"},
         {"role": "user", "content": "Create an entity relationship diagram"},
         {"role": "assistant", "content": "```mermaid\nerDiagram\n\nCAR ||--o{ NAMED-DRIVER : allows\nCAR {\n    string registrationNumber PK\n    string make\n    string model\n    string[] parts\n}\n\nPERSON ||--o{ NAMED-DRIVER : is\nPERSON {\n    string driversLicense PK \"The license #\"\n    string(99) firstName \"Only 99 characters are allowed\"\n    string lastName\n    string phone UK\n    int age\n}\n\nNAMED-DRIVER {\n    string carRegistrationNumber PK, FK\n    string driverLicence PK, FK\n}\n\nMANUFACTURER only one to zero or more CAR : makes\n```"},
         {"role": "user", "content": prompt},
 
     ]
     )
-    print(response.choices[0].message.content)
     mermaid_code = response.choices[0].message.content
-    return {"mermaid_code" : mermaid_code }
+
+   # Split the string by the ``` delimiter
+    parts = mermaid_code.split("```")
+
+    # Check if we have at least three parts (before, mermaid code, after)
+    if len(parts) >= 3:
+        # The actual Mermaid code is in the second part, but still contains the word 'mermaid'
+        mermaid_code = parts[1].strip()
+
+        # Remove the 'mermaid' word if it's at the start
+        if mermaid_code.startswith("mermaid"):
+            mermaid_code = mermaid_code[len("mermaid"):].strip()
+    else:
+        mermaid_code = ""
+
+    print(mermaid_code)
+    # Create a temporary file to hold the Mermaid code
+    with tempfile.NamedTemporaryFile(mode='w+', suffix='.mmd', delete=False) as temp_file:
+        temp_file.write(mermaid_code)
+        temp_file_path = temp_file.name
+
+    # Define the path for the output PNG file
+    output_png_path = temp_file_path + ".png"
+
+    # Run mermaid-cli to generate the PNG file
+    try:
+        subprocess.run(["mmdc", "-i", temp_file_path, "-o", output_png_path], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error in generating PNG: {e}")
+        return {"error": "Failed to generate PNG"}
+
+    print(output_png_path)
+    s3_file_key = temp_file.name + ".png"
+    with open(output_png_path, 'rb') as file:
+        s3.upload_fileobj(
+            file,
+            'hoodie-creator',  # Your S3 bucket name
+            s3_file_key,  # The desired key (name) for the uploaded file
+            ExtraArgs={
+                'ACL': 'public-read',  # Makes the file publicly readable
+                'ContentType': 'image/png'  # Sets the content type
+            }
+        )
+    s3_file_url = f"https://hoodie-creator.s3.amazonaws.com/{s3_file_key}"
+    print(s3_file_url)
+    # Here you can add code to handle the PNG file as needed
+    return {"mermaid_png_path": s3_file_url}
 
 
 def create_product(user, body) -> str:
