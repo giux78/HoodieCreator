@@ -70,13 +70,37 @@ def create_image(user, body):
 
 def create_video(user, body):
     image_url = body['image_url']
+    name = str(uuid.uuid4())[:8]
+
+    urllib.request.urlretrieve( 
+        image_url,
+        f"/tmp/{name}.png"
+        ) 
+  
+    im = Image.open(f"/tmp/{name}.png") 
+
+    in_mem_file = io.BytesIO()
+    im.save(in_mem_file, format=im.format)
+    in_mem_file.seek(0)
+
+    s3.upload_fileobj(
+        in_mem_file, # This is what i am trying to upload
+        'hoodie-creator',
+        f"{name}.png",
+        ExtraArgs={
+            'ACL': 'public-read',
+            'ContentType': 'image/png'
+        }
+    )
+
+    image_to_video = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}.png'
 
     response = replicate.run(
     "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
     input={
         "cond_aug": 0.02,
         "decoding_t": 7,
-        "input_image": image_url,
+        "input_image": image_to_video,
         "video_length": "14_frames_with_svd",
         "sizing_strategy": "maintain_aspect_ratio",
         "motion_bucket_id": 127,
