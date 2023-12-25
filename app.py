@@ -192,12 +192,42 @@ def create_product(user, body) -> str:
   
     im = Image.open(f"/tmp/{name}.png") 
 
+    in_mem_file = io.BytesIO()
+    im.save(in_mem_file, format=im.format)
+    in_mem_file.seek(0)
+
+    s3.upload_fileobj(
+        in_mem_file, # This is what i am trying to upload
+        'hoodie-creator',
+        f"{name}-original.png",
+        ExtraArgs={
+            'ACL': 'public-read',
+            'ContentType': 'image/png'
+        }
+    )
+
+    output = replicate.run(
+        "pollinations/modnet:da7d45f3b836795f945f221fc0b01a6d3ab7f5e163f13208948ad436001e2255",
+        input={
+            "image": f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}-original.png'
+        }
+    )
+    
+    print(output)
+
+    urllib.request.urlretrieve( 
+        output,
+        f"/tmp/{name}-removed.png"
+    ) 
+
+    bk_removed = Image.open(f"/tmp/{name}-removed.png")
+
     #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(f"./data/hoodie-{color}-back.png") 
 
-    img3 = im.resize((300,300))
-    #imgbk.paste(img3, (250,280), img3) 
-    imgbk = Image.alpha_composite(imgbk, img3)
+    img3 = bk_removed.resize((300,300))
+    imgbk.paste(img3, (250,280), img3) 
+    #imgbk = Image.alpha_composite(imgbk, img3)
 
     img_front = Image.open(f"./data/hoodie-{color}-front.png")
     img_qr = Image.open(r"./data/qrcode_test.png")
