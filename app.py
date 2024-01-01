@@ -228,7 +228,8 @@ def create_product(user, body) -> str:
 
     #img3 = bk_removed.resize((300,300))
     img3 = im.resize((300,300))
-    imgbk.paste(img3, (250,280), img3) 
+    imgbk.paste(img3, (250,280)) 
+    #imgbk.paste(img3, (250,280), img3) 
     #imgbk = Image.alpha_composite(imgbk, img3)
 
     img_front = Image.open(f"./data/hoodie-{color}-front.png")
