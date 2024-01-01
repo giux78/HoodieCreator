@@ -205,7 +205,8 @@ def create_product(user, body) -> str:
             'ContentType': 'image/png'
         }
     )
-
+    
+    '''
     output = replicate.run(
         "pollinations/modnet:da7d45f3b836795f945f221fc0b01a6d3ab7f5e163f13208948ad436001e2255",
         input={
@@ -221,11 +222,12 @@ def create_product(user, body) -> str:
     ) 
 
     bk_removed = Image.open(f"/tmp/{name}-removed.png")
-
+    '''
     #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(f"./data/hoodie-{color}-back.png") 
 
-    img3 = bk_removed.resize((300,300))
+    #img3 = bk_removed.resize((300,300))
+    img3 = im.resize((300,300))
     imgbk.paste(img3, (250,280), img3) 
     #imgbk = Image.alpha_composite(imgbk, img3)
 
