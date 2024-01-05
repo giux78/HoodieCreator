@@ -1,16 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "app.py", "use": "@vercel/python", 
-    "config": { 
-      "maxDuration": "300",
-      "buildCommand": "./install_mermaid_cli.sh && pip install -r requirements.txt && python app.py"
-     } }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/app.py"}
-  ],
-  "env": {
-    "APP_MODULE": "app:app"
-  }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/app" }
+  ]
 }
