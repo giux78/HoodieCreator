@@ -104,7 +104,7 @@ def create_video(user, body):
         "cond_aug": 0.02,
         "decoding_t": 7,
         "input_image": image_to_video,
-        "video_length": "14_frames_with_svd",
+        "video_length": "21_frames_with_svd",
         "sizing_strategy": "maintain_aspect_ratio",
         "motion_bucket_id": 127,
         "frames_per_second": 6
