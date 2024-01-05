@@ -282,11 +282,11 @@ def create_product(user, body) -> str:
         product = stripe.Product.create(name=name, 
                                 description=description_stripe, 
                                 images=[image_url, image__url_front],   
-                                default_price_data={"unit_amount": 8990, "currency": "eur"},
+                                default_price_data={"unit_amount": 5990, "currency": "eur"},
                                 metadata=metadata_stripe)
         product_id = product['id']
         price= stripe.Price.create(
-            unit_amount=8990,
+            unit_amount=5990,
             currency="eur",
             product=product_id,
         )
@@ -303,9 +303,9 @@ def create_product(user, body) -> str:
             mode='payment',
             success_url= f'{ENV_URL}/static/success.html',
             cancel_url= f'{ENV_URL}/static/cancel.html',
-                shipping_address_collection={
-                    'allowed_countries': ['IT','US','GB'],
-                }
+            shipping_address_collection={
+                    'allowed_countries': ['IT','US','GB','DE','ES'],
+            },
         )
     except Exception as e:
         print(str(e))
