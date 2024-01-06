@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/app" }
+  ],
   "functions": {
     "openapi/*": {
       "maxDuration": 300

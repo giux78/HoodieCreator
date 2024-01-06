@@ -27,7 +27,6 @@ import replicate
 
 import subprocess
 import tempfile
-
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
@@ -332,7 +331,7 @@ def tweet_campaigns(user, body):
     return {'status' : 'OK tweet has been posted'}
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
-app.add_api("openapi.yaml")
+app.add_api("spec/openapi.yaml")
 load_dotenv()
 
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
