@@ -22,7 +22,7 @@ import urllib.request
 import uuid
 from flask import current_app
 import tweepy
-from utils import x
+from .utils import x
 import replicate
 
 import subprocess
@@ -331,7 +331,7 @@ def tweet_campaigns(user, body):
     return {'status' : 'OK tweet has been posted'}
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
-app.add_api("spec/openapi.yaml")
+app.add_api("/spec/openapi.yaml")
 load_dotenv()
 
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
