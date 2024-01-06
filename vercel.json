@@ -1,15 +1,7 @@
 {
-  "builds": [
-    {
-      "src": "app.py",
-      "use": "@vercel/python",
-      "config": { "maxDuration": "300" }
+  "functions": {
+    "openapi/*": {
+      "maxDuration": 300
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.py"
-    }
-  ]
+  }
 }
