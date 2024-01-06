@@ -22,7 +22,7 @@ import urllib.request
 import uuid
 from flask import current_app
 import tweepy
-from .utils import x
+from utils import x
 import replicate
 
 import subprocess
@@ -349,5 +349,5 @@ x_client = tweepy.Client(
     access_token=os.getenv('X_ACCESS_TOKEN'), access_token_secret=os.getenv('X_ACCESS_TOKEN_SECRET')
 )
 
-if __name__ == "__main__":
-    app.run(f"{Path(__file__).stem}:app", port=80)
+#if __name__ == "__main__":
+#    app.run(f"{Path(__file__).stem}:app", port=80)
