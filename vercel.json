@@ -3,7 +3,7 @@
     {
       "src": "app.py",
       "use": "@vercel/python",
-      "config": { "maxDuration": "300" }
+      "config": { "maxDurations": 300 }
     }
   ],
   "routes": [
