@@ -38,6 +38,8 @@ paths:
                     type: string
                   product_image_back:
                     type: string
+                  price_id:
+                    type: string
       requestBody:
         description: the image with name color and base64 representation
         required: true

@@ -312,7 +312,8 @@ def create_product(user, body) -> str:
         return str(e)
     return  {'link_stripe' : checkout_session.url, 
              "product_image_front" : image__url_front,
-             "product_image_back" : image_url}
+             "product_image_back" : image_url,
+             "price_id" : price_id}
 
 def tweet_campaigns(user, body):
     media_id = None
