@@ -10,7 +10,7 @@
     {
       "src": "/(.*)",
       "dest": "app.py",
-      "config": { "maxDuration": 300, "maxLambdaSize": "200mb"  }
+      "maxDuration": 300
     }
   ]
   
