@@ -9,13 +9,9 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "app.py"
+      "dest": "app.py",
+      "config": { "maxDuration": 300, "maxLambdaSize": "200mb"  }
     }
-  ],
-  "functions" : {    
-      "app.py": {
-        "maxDuration": 30
-      }
-  }
+  ]
   
 }
