@@ -223,6 +223,42 @@ paths:
             text/plain:
               schema:
                 type: string
+  /zefiro/v0.5/generate:    
+    post:
+      summary: Generate text
+      description: Generate text
+      operationId: app.zefiro_generate
+      x-openai-isConsequential: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                    role: 
+                      type: string
+      requestBody:
+        description: the prompt to create a new image
+        required: true
+        content:
+          application/json:
+            schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                      content:
+                        type: string
+                      role: 
+                        type: string
+      security:
+        - api_key: []
 components:
   securitySchemes:
     api_key:

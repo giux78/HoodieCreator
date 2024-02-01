@@ -12,6 +12,7 @@ from io import BytesIO
 import base64
 import os
 from dotenv import load_dotenv
+import requests
 import stripe
 import flask
 import boto3
@@ -24,6 +25,7 @@ from flask import current_app
 import tweepy
 from utils import x
 import replicate
+from transformers import AutoTokenizer
 
 import subprocess
 import tempfile
@@ -69,7 +71,6 @@ def create_image(user, body):
 
     image_url = response.data[0].url
     return {"image_url" : image_url }
-
 
 def create_video(user, body):
     image_url = body['image_url']
@@ -331,6 +332,49 @@ def tweet_campaigns(user, body):
             text=text
         )  
     return {'status' : 'OK tweet has been posted'}
+
+def zefiro_generate(user, body):
+    messages = body
+    print(messages)
+    sys_prompt = "Sei un assistente disponibile, rispettoso e onesto. " \
+         "Rispondi sempre nel modo piu' utile possibile, pur essendo sicuro. " \
+         "Le risposte non devono includere contenuti dannosi, non etici, razzisti, sessisti, tossici, pericolosi o illegali. " \
+         "Assicurati che le tue risposte siano socialmente imparziali e positive. " \
+         "Se una domanda non ha senso o non e' coerente con i fatti, spiegane il motivo invece di rispondere in modo non corretto. " \
+         "Se non conosci la risposta a una domanda, non condividere informazioni false."
+    
+    if(messages[0]['id'] != 'sys'):
+        messages.insert(0, {'role' : 'assistant', 'content' : sys_prompt, "id" : "sys"})
+    
+    to_generate = tokenizer.apply_chat_template(messages , 
+                                                tokenize=False, 
+                                                add_generation_prompt=True
+                                                #truncation=False, 
+                                                #padding_side='left'
+                                                )
+    #API_URL = "https://h2opl5lmg1oqd2o2.us-east-1.aws.endpoints.huggingface.cloud"
+    API_URL="https://lbqf6xe9jk6h0z2q.us-east-1.aws.endpoints.huggingface.cloud"
+    headers = {
+        "Accept" : "application/json",
+        "Authorization": "Bearer " + os.environ.get('HF_TOKEN'),
+        "Content-Type": "application/json" 
+    }
+
+    payload = {
+	    "inputs": to_generate,
+	    "parameters": {"max_new_tokens": 1024, 
+                       "skip_special_tokens": True}
+    }
+
+    response = requests.post(API_URL, headers=headers, json=payload)
+    generated_resp = response.json()
+    print(type(generated_resp[0]))
+    generated_text = generated_resp[0]['generated_text'].replace('<|assistant|>','')
+    print(generated_text)
+    messages.append({'role' : 'assistant', 'content' : generated_text})
+    return messages
+
+
     
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
 app.add_api("openapi.yaml")
@@ -343,6 +387,9 @@ os.environ['REPLICATE_API_TOKEN'] = os.getenv("REPLICATE_API_KEY")
 s3 = boto3.client('s3',
     aws_access_key_id=os.getenv('AWS_SERVER_PUBLIC_KEY'),
     aws_secret_access_key=os.getenv('AWS_SERVER_SECRET_KEY') )
+
+tokenizer = AutoTokenizer.from_pretrained("giux78/zefiro-7b-sft-qlora-ITA-v0.5", 
+                                          padding_side="left")
 
 stripe.api_key  = os.getenv('STRIPE_SECRET_KEY')
 
