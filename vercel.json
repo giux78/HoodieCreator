@@ -9,8 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "app.py",
-      "maxDuration": 300
+      "dest": "app.py"
     }
   ]
   
