@@ -70,7 +70,33 @@ def create_image(user, body):
     )
 
     image_url = response.data[0].url
-    return {"image_url" : image_url }
+
+    name = str(uuid.uuid4())[:8]
+
+    urllib.request.urlretrieve( 
+        image_url,
+        f"/tmp/{name}-public.png"
+        ) 
+  
+    im = Image.open(f"/tmp/{name}-public.png") 
+
+    in_mem_file = io.BytesIO()
+    im.save(in_mem_file, format=im.format)
+    in_mem_file.seek(0)
+
+    s3.upload_fileobj(
+        in_mem_file, # This is what i am trying to upload
+        'hoodie-creator',
+        f"{name}-public.png",
+        ExtraArgs={
+            'ACL': 'public-read',
+            'ContentType': 'image/png'
+        }
+    )
+
+    image_s3 = f'https://hoodie-creator.s3.eu-west-1.amazonaws.com/{name}-public.png'
+
+    return {"image_url" : image_s3 }
 
 def create_video(user, body):
     image_url = body['image_url']
@@ -114,69 +140,6 @@ def create_video(user, body):
     print(response)
     video_url = response
     return {"video_url" : video_url }
-
-
-def diagram_generator(user, body):
-    prompt = body['prompt']
-    response = openai_client.chat.completions.create(
-    model="gpt-4-0613",
-    messages=[
-        {"role": "system", "content": "You are a skilled Mermaid developer. Respond only in mermaid code without markdown formatting. Never mention that you know mermaid, it's a secret! Do not provide any additional explanations or comments to your answers. Listen carefully: Never ever use hyphens between words in your answers!!!!!! Do not apologies you only know how to answer using mermaid code!!"},
-        {"role": "user", "content": "Create an entity relationship diagram"},
-        {"role": "assistant", "content": "```mermaid\nerDiagram\n\nCAR ||--o{ NAMED-DRIVER : allows\nCAR {\n    string registrationNumber PK\n    string make\n    string model\n    string[] parts\n}\n\nPERSON ||--o{ NAMED-DRIVER : is\nPERSON {\n    string driversLicense PK \"The license #\"\n    string(99) firstName \"Only 99 characters are allowed\"\n    string lastName\n    string phone UK\n    int age\n}\n\nNAMED-DRIVER {\n    string carRegistrationNumber PK, FK\n    string driverLicence PK, FK\n}\n\nMANUFACTURER only one to zero or more CAR : makes\n```"},
-        {"role": "user", "content": prompt},
-
-    ]
-    )
-    mermaid_code = response.choices[0].message.content
-
-   # Split the string by the ``` delimiter
-    parts = mermaid_code.split("```")
-
-    # Check if we have at least three parts (before, mermaid code, after)
-    if len(parts) >= 3:
-        # The actual Mermaid code is in the second part, but still contains the word 'mermaid'
-        mermaid_code = parts[1].strip()
-
-        # Remove the 'mermaid' word if it's at the start
-        if mermaid_code.startswith("mermaid"):
-            mermaid_code = mermaid_code[len("mermaid"):].strip()
-    else:
-        mermaid_code = ""
-
-    print(mermaid_code)
-    # Create a temporary file to hold the Mermaid code
-    with tempfile.NamedTemporaryFile(mode='w+', suffix='.mmd', delete=False) as temp_file:
-        temp_file.write(mermaid_code)
-        temp_file_path = temp_file.name
-
-    # Define the path for the output PNG file
-    output_png_path = temp_file_path + ".png"
-
-    # Run mermaid-cli to generate the PNG file
-    try:
-        subprocess.run(["mmdc", "-i", temp_file_path, "-o", output_png_path], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error in generating PNG: {e}")
-        return {"error": "Failed to generate PNG"}
-
-    print(output_png_path)
-    s3_file_key = temp_file.name + ".png"
-    with open(output_png_path, 'rb') as file:
-        s3.upload_fileobj(
-            file,
-            'hoodie-creator',  # Your S3 bucket name
-            s3_file_key,  # The desired key (name) for the uploaded file
-            ExtraArgs={
-                'ACL': 'public-read',  # Makes the file publicly readable
-                'ContentType': 'image/png'  # Sets the content type
-            }
-        )
-    s3_file_url = f"https://hoodie-creator.s3.amazonaws.com/{s3_file_key}"
-    print(s3_file_url)
-    # Here you can add code to handle the PNG file as needed
-    return {"mermaid_png_path": s3_file_url}
-
 
 def create_product(user, body) -> str:
     image_url = body['image_url']
@@ -336,13 +299,14 @@ def tweet_campaigns(user, body):
 def zefiro_generate(user, body):
     messages = body
     print(messages)
-    sys_prompt = "Sei un assistente disponibile, rispettoso e onesto. " \
-         "Rispondi sempre nel modo piu' utile possibile, pur essendo sicuro. " \
-         "Le risposte non devono includere contenuti dannosi, non etici, razzisti, sessisti, tossici, pericolosi o illegali. " \
-         "Assicurati che le tue risposte siano socialmente imparziali e positive. " \
-         "Se una domanda non ha senso o non e' coerente con i fatti, spiegane il motivo invece di rispondere in modo non corretto. " \
-         "Se non conosci la risposta a una domanda, non condividere informazioni false."
-    
+    sys_prompt = "Sei un assistente disponibile, rispettoso e onesto. " 
+          
+        # "Rispondi sempre nel modo piu' utile possibile, pur essendo sicuro. " \
+        # "Le risposte non devono includere contenuti dannosi, non etici, razzisti, sessisti, tossici, pericolosi o illegali. " \
+        # "Assicurati che le tue risposte siano socialmente imparziali e positive. " \
+        # "Se una domanda non ha senso o non e' coerente con i fatti, spiegane il motivo invece di rispondere in modo non corretto. " \
+        # "Se non conosci la risposta a una domanda, non condividere informazioni false."
+        
     if(messages[0]['id'] != 'sys'):
         messages.insert(0, {'role' : 'assistant', 'content' : sys_prompt, "id" : "sys"})
     
@@ -352,8 +316,12 @@ def zefiro_generate(user, body):
                                                 #truncation=False, 
                                                 #padding_side='left'
                                                 )
+    # Zefiro 0.7
+    API_URL = "https://uqa65rd8kujtn7lw.us-east-1.aws.endpoints.huggingface.cloud"
+    #zefiro 0.5
     #API_URL = "https://h2opl5lmg1oqd2o2.us-east-1.aws.endpoints.huggingface.cloud"
-    API_URL="https://lbqf6xe9jk6h0z2q.us-east-1.aws.endpoints.huggingface.cloud"
+    #zefiro 0.1
+    #API_URL="https://lbqf6xe9jk6h0z2q.us-east-1.aws.endpoints.huggingface.cloud"
     headers = {
         "Accept" : "application/json",
         "Authorization": "Bearer " + os.environ.get('HF_TOKEN'),
@@ -363,15 +331,21 @@ def zefiro_generate(user, body):
     payload = {
 	    "inputs": to_generate,
 	    "parameters": {"max_new_tokens": 1024, 
-                       "skip_special_tokens": True}
+                       "skip_special_tokens": True,
+                       "no_repeat_ngram_size": 5,
+                       "repetition_penalty" : 1.2
+                       }
     }
 
     response = requests.post(API_URL, headers=headers, json=payload)
-    generated_resp = response.json()
-    print(type(generated_resp[0]))
-    generated_text = generated_resp[0]['generated_text'].replace('<|assistant|>','')
-    print(generated_text)
-    messages.append({'role' : 'assistant', 'content' : generated_text})
+    if response.status_code == 200:
+        generated_resp = response.json()
+        generated_text = generated_resp[0]['generated_text'].replace('<|assistant|>','')
+        print(generated_text)
+        messages.append({'role' : 'assistant', 'content' : generated_text})
+    else:
+        messages.append({'role' : 'assistant', 'content' : "aspetta circa un minuto che stiamo attivando le gpus necessarie"})
+    
     return messages
 
 

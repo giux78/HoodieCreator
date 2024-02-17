@@ -98,37 +98,6 @@ paths:
                   type: string
       security:
         - api_key: []
-  /generate_diagram:    
-      post:
-        summary: Generate a diagram from the provided prompt
-        description: Generate a diagram from the prompt provided
-        operationId: app.diagram_generator
-        x-openai-isConsequential: true
-        responses:
-          '200':
-            description: OK
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    mermaid_code:
-                      type: string
-        requestBody:
-          description: the prompt to create a new diagram using mermaid code
-          required: true
-          content:
-            application/json:
-              schema:
-                required:
-                  - prompt
-                type: object
-                properties:
-                  prompt:
-                    description: the prompt used to genereate a diagram written in mermaid code
-                    type: string
-        security:
-          - api_key: []
   /generate_video:    
     post:
       summary: Generate a video from the provided image
