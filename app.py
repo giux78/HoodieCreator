@@ -31,13 +31,6 @@ import json
 from upstash_redis import Redis
 from upstash_ratelimit import FixedWindow, Ratelimit
 
-redis = Redis(url=os.getenv('UPSTASH_REDIS_REST_URL'), token=os.getenv("UPSTASH_REDIS_REST_TOKEN"))
-
-ratelimit = Ratelimit(
-    redis=redis,
-    limiter=FixedWindow(max_requests=3, window=60),
-)
-
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
@@ -393,6 +386,13 @@ load_dotenv()
 
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
 os.environ['REPLICATE_API_TOKEN'] = os.getenv("REPLICATE_API_KEY")
+
+redis = Redis(url=os.getenv('UPSTASH_REDIS_REST_URL'), token=os.getenv("UPSTASH_REDIS_REST_TOKEN"))
+
+ratelimit = Ratelimit(
+    redis=redis,
+    limiter=FixedWindow(max_requests=3, window=60),
+)
 
 
 s3 = boto3.client('s3',
