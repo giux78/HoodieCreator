@@ -26,9 +26,17 @@ import tweepy
 from utils import x
 import replicate
 from transformers import AutoTokenizer
+import json
 
-import subprocess
-import tempfile
+from upstash_redis import Redis
+from upstash_ratelimit import FixedWindow, Ratelimit
+
+redis = Redis(url=os.getenv('UPSTASH_REDIS_REST_URL'), token=os.getenv("UPSTASH_REDIS_REST_TOKEN"))
+
+ratelimit = Ratelimit(
+    redis=redis,
+    limiter=FixedWindow(max_requests=3, window=60),
+)
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -47,15 +55,21 @@ def get_privacy_policy():
     return current_app.send_static_file('privacy_policy.html')
 
 def apikey_auth(token, required_scopes):
-    info = TOKEN_DB.get(token, None)
-
-    if not info:
+    #info = TOKEN_DB.get(token, None)
+    user = None
+    if(redis.exists(f'api:{token}')):
+        user = redis.hgetall(f'api:{token}')
+        print(user)
+    
+    if not user:
         raise OAuthProblem("Invalid token")
-
-    return info
+    print(user)
+    return user
 
 
 def get_secret(user) -> str:
+    print("ALEEEEEE")
+    print(len(redis.keys("*")))
     return f"You are {user} and the secret is 'wbevuec'"
 
 def create_image(user, body):
@@ -306,7 +320,13 @@ def zefiro_generate(user, body):
         # "Assicurati che le tue risposte siano socialmente imparziali e positive. " \
         # "Se una domanda non ha senso o non e' coerente con i fatti, spiegane il motivo invece di rispondere in modo non corretto. " \
         # "Se non conosci la risposta a una domanda, non condividere informazioni false."
-        
+    apikey = redis.get(f'user:{user}:api')
+    print('APIKEY')
+    limiting = ratelimit.limit(apikey)
+    if not limiting.allowed:
+        return {'error' : 'too many request per minute'}, 429
+
+
     if(messages[0]['id'] != 'sys'):
         messages.insert(0, {'role' : 'assistant', 'content' : sys_prompt, "id" : "sys"})
     
@@ -346,6 +366,23 @@ def zefiro_generate(user, body):
     else:
         messages.append({'role' : 'assistant', 'content' : "aspetta circa un minuto che stiamo attivando le gpus necessarie"})
     
+    if isinstance(messages, list):
+        tokenFromMess = 0
+        for message in messages:
+            tokenFromMess += round(len(message['content'].split(' ')) * 2 * 1.5)
+        
+        # Assuming kv is an instance of an async key-value store library
+        info = redis.hgetall(f"api:{apikey}")
+        nToken = 100000
+        if "n_token" in info:
+            nToken = int(info['n_token'])
+        
+        count = nToken - tokenFromMess
+        redis.hset(f"api:{apikey}", 'n_token', count)
+        
+        # Remove system prompt
+        messages.pop(0)
+
     return messages
 
 

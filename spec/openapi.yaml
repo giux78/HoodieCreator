@@ -3,7 +3,7 @@ info:
   title: API Key Example
   version: '1.0'
 servers:
-  - url: https://hoodie-creator.vercel.app/openapi
+  - url: https://qod.io/openapi
 paths:
   /secret:
     get:
