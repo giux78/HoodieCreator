@@ -53,7 +53,7 @@ def apikey_auth(token, required_scopes):
     if(redis.exists(f'api:{token}')):
         user = redis.hgetall(f'api:{token}')
         print(user)
-    elif token is "asdf1234567890":
+    elif token == "asdf1234567890":
         user = { "n_token" : 10000, "uid" : "apikey" }
     
     if not user:
