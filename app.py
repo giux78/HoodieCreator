@@ -63,8 +63,6 @@ def apikey_auth(token, required_scopes):
 
 
 def get_secret(user) -> str:
-    print("ALEEEEEE")
-    print(len(redis.keys("*")))
     return f"You are {user} and the secret is 'wbevuec'"
 
 def create_image(user, body):
@@ -337,6 +335,8 @@ def zefiro_generate(user, body):
     #API_URL = "https://h2opl5lmg1oqd2o2.us-east-1.aws.endpoints.huggingface.cloud"
     #zefiro 0.1
     #API_URL="https://lbqf6xe9jk6h0z2q.us-east-1.aws.endpoints.huggingface.cloud"
+    API_URL="http://ec204616.seewebcloud.it:30015/generate"
+    
     headers = {
         "Accept" : "application/json",
         "Authorization": "Bearer " + os.environ.get('HF_TOKEN'),
@@ -355,7 +355,11 @@ def zefiro_generate(user, body):
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
         generated_resp = response.json()
-        generated_text = generated_resp[0]['generated_text'].replace('<|assistant|>','')
+        #print(generated_resp)
+        # worked on hf inference endpoint
+        #generated_text = generated_resp[0]['generated_text'].replace('<|assistant|>','')
+        # work on seeweb
+        generated_text = generated_resp['generated_text'].replace('<|assistant|>','')
         print(generated_text)
         messages.append({'role' : 'assistant', 'content' : generated_text})
     else:
