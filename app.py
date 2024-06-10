@@ -359,8 +359,10 @@ def zefiro_generate(user, body):
         "Content-Type": "application/json" 
     }
 
+# "model": "giux78/zefiro-7b-dpo-qlora-ITA-v0.7",
+
     payload = {
-	               "model": "giux78/zefiro-7b-dpo-qlora-ITA-v0.7",
+	               "model": "mii-llm/maestrale-chat-v0.4-beta",
                    "messages": messages,
                    "max_new_tokens": 1024, 
                     "skip_special_tokens": True,
