@@ -1,9 +1,3 @@
-"""
-Basic example of a resource server
-"""
-from pathlib import Path
-import os
-
 import connexion
 from connexion.exceptions import OAuthProblem
 
@@ -322,14 +316,6 @@ def zefiro_generate(user, body):
     if(messages[0]['id'] != 'sys'):
         messages.insert(0, {'role' : 'assistant', 'content' : sys_prompt, "id" : "sys"})
     
-    '''
-    to_generate = tokenizer.apply_chat_template(messages , 
-                                                tokenize=False, 
-                                                add_generation_prompt=True
-                                                #truncation=False, 
-                                                #padding_side='left'
-                                                )
-    '''
     # Zefiro 0.7
     # API_URL = "https://uqa65rd8kujtn7lw.us-east-1.aws.endpoints.huggingface.cloud"
     #zefiro 0.5
@@ -338,21 +324,7 @@ def zefiro_generate(user, body):
     #API_URL="https://lbqf6xe9jk6h0z2q.us-east-1.aws.endpoints.huggingface.cloud"
     #API_URL="http://ec204616.seewebcloud.it:30015/generate"
     API_URL="https://zefiro-api.seeweb.ai/v1/chat/completions"
-    '''
-    curl -i -H --location $ENDPOINT \
-	     --header "Content-Type: application/json" \
-	     --header "Accept: application/json" \
-	     --header "Authorization: Bearer ${APIKEY}" \
-	     --data   '{
-	               "model": "giux78/zefiro-7b-dpo-qlora-ITA-v0.7",
-                   "messages": [ {
-		          "role": "user",
-			  "content": "Parlami di Roma, della sua storia, delle sue bellezze"
-			}]
-		       }'
-        '''
-
-
+    
     headers = {
         "Accept" : "application/json",
         "Authorization": "Bearer " + os.environ.get('SEEWEB'),
@@ -362,23 +334,19 @@ def zefiro_generate(user, body):
 # "model": "giux78/zefiro-7b-dpo-qlora-ITA-v0.7",
 
     payload = {
-	               "model": "mii-llm/maestrale-chat-v0.4-beta",
-                   "messages": messages,
-                   "max_new_tokens": 1024, 
-                    "skip_special_tokens": True,
-                    "no_repeat_ngram_size": 5,
-                    "repetition_penalty" : 1.2
-		       }
-    ''' 
-    payload = {
-	    "inputs": to_generate,
-	    "parameters": {"max_new_tokens": 1024, 
-                       "skip_special_tokens": True,
-                       "no_repeat_ngram_size": 5,
-                       "repetition_penalty" : 1.2
-                       }
+	        "model": "mii-llm/maestrale-chat-v0.4-beta",
+            "messages": messages,
+            "max_new_tokens": 1024, 
+            "skip_special_tokens": True,
+            "no_repeat_ngram_size": 5,
+            "repetition_penalty" : 1.2,
+            "do_sample" : True,
+            "temperature" : 0.7,
+            "top_k" : 50,
+            "top_p" : 0.95,
     }
-    '''
+    
+
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
         generated_resp = response.json()
@@ -413,7 +381,91 @@ def zefiro_generate(user, body):
     return messages
 
 
-    
+def maestrale_generate(user, body):
+    messages = body
+    print(messages)
+    sys_prompt = "Sei un assistente disponibile, rispettoso e onesto. "
+
+        # "Rispondi sempre nel modo piu' utile possibile, pur essendo sicuro. " \
+        # "Le risposte non devono includere contenuti dannosi, non etici, razzisti, sessisti, tossici, pericolosi o illegali. " \
+        # "Assicurati che le tue risposte siano socialmente imparziali e positive. " \
+        # "Se una domanda non ha senso o non e' coerente con i fatti, spiegane il motivo invece di rispondere in modo non corretto. " \
+        # "Se non conosci la risposta a una domanda, non condividere informazioni false."
+    apikey = redis.get(f'user:{user}:api')
+    limiting = ratelimit.limit(apikey)
+    if not limiting.allowed:
+        return {'error' : 'too many request per minute'}, 429
+
+
+    if(messages[0]['id'] != 'sys'):
+        messages.insert(0, {'role' : 'assistant', 'content' : sys_prompt, "id" : "sys"})
+
+    # Zefiro 0.7
+    # API_URL = "https://uqa65rd8kujtn7lw.us-east-1.aws.endpoints.huggingface.cloud"
+    #zefiro 0.5
+    #API_URL = "https://h2opl5lmg1oqd2o2.us-east-1.aws.endpoints.huggingface.cloud"
+    #zefiro 0.1
+    #API_URL="https://lbqf6xe9jk6h0z2q.us-east-1.aws.endpoints.huggingface.cloud"
+    #API_URL="http://ec204616.seewebcloud.it:30015/generate"
+    API_URL="https://zefiro-api.seeweb.ai/v1/chat/completions"
+
+    headers = {
+        "Accept" : "application/json",
+        "Authorization": "Bearer " + os.environ.get('SEEWEB'),
+        "Content-Type": "application/json"
+    }
+
+# "model": "giux78/zefiro-7b-dpo-qlora-ITA-v0.7",
+
+    payload = {
+            "model": "mii-llm/maestrale-chat-v0.4-beta",
+            "messages": messages,
+            "max_new_tokens": 1024,
+            "skip_special_tokens": True,
+            "no_repeat_ngram_size": 5,
+            "repetition_penalty" : 1.2,
+            "do_sample" : True,
+            "temperature" : 0.7,
+            "top_k" : 50,
+            "top_p" : 0.95,
+    }
+
+
+    response = requests.post(API_URL, headers=headers, json=payload)
+    if response.status_code == 200:
+        generated_resp = response.json()
+        print(generated_resp)
+        # worked on hf inference endpoint
+        #generated_text = generated_resp[0]['generated_text'].replace('<|assistant|>','')
+        # work on seeweb
+        #generated_resp['generated_text'].replace('<|assistant|>','')
+        generated_text = generated_resp['choices'][0]['message']['content']
+        print(generated_text)
+        messages.append({'role' : 'assistant', 'content' : generated_text})
+    else:
+        messages.append({'role' : 'assistant', 'content' : "aspetta circa un minuto che stiamo attivando le gpus necessarie"})
+
+    if isinstance(messages, list):
+        tokenFromMess = 0
+        for message in messages:
+            tokenFromMess += round(len(message['content'].split(' ')) * 2 * 1.5)
+
+        # Assuming kv is an instance of an async key-value store library
+        info = redis.hgetall(f"api:{apikey}")
+        nToken = 100000
+        if "n_token" in info:
+            nToken = int(info['n_token'])
+
+        count = nToken - tokenFromMess
+        redis.hset(f"api:{apikey}", 'n_token', count)
+
+        # Remove system prompt
+        messages.pop(0)
+
+    return messages    
+
+
+
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
 app.add_api("openapi.yaml")
 load_dotenv()
@@ -444,4 +496,4 @@ x_client = tweepy.Client(
 )
 
 if __name__ == "__main__":
-    app.run(f"{Path(__file__).stem}:app", port=80)
+    app.run(f"{Path(__file__).stem}:app",host="0.0.0.0", port=80)
