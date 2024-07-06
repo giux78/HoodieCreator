@@ -264,6 +264,48 @@ paths:
                         type: string
       security:
         - api_key: []
+  /gliner-ita/v0.1/entity_extraction:
+    post:
+      summary: Extract entities from text max 200 words
+      description: Extract entities from text max 200 words
+      operationId: app.gliner_extract
+      x-openai-isConsequential: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    start:
+                      type: integer
+                    end:
+                      type: integer
+                    text: 
+                      type: string
+                    label:
+                      type: string
+                    score:
+                      type: number              
+      requestBody:
+        description: the prompt to create a new image
+        required: true
+        content:
+          application/json:
+            schema:
+                type: object
+                properties:
+                  text:
+                      type: string
+                  labels:
+                      type: array
+                      items: 
+                        type: string
+      security:
+        - api_key: []
 components:
   securitySchemes:
     api_key:

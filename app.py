@@ -25,6 +25,9 @@ import json
 from upstash_redis import Redis
 from upstash_ratelimit import FixedWindow, Ratelimit
 
+from gliner import GLiNER
+
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
@@ -464,6 +467,20 @@ def maestrale_generate(user, body):
 
     return messages    
 
+def gliner_extract(user, body):
+    messages = body
+    print(body['text'])
+    print(body['labels'])
+
+    text = body['text']
+    labels = body['labels']
+
+    entities = model_gliner.predict_entities(text, labels)
+    print(entities)
+
+    for entity in entities:
+        print(entity["text"], "=>", entity["label"])
+    return entities
 
 
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
@@ -487,6 +504,11 @@ s3 = boto3.client('s3',
 
 tokenizer = AutoTokenizer.from_pretrained("giux78/zefiro-7b-sft-qlora-ITA-v0.5", 
                                           padding_side="left")
+
+#tokenizer = AutoTokenizer.from_pretrained("mii-llm/maestrale-chat-v0.4-beta", 
+#                                          padding_side="left")
+
+model_gliner = GLiNER.from_pretrained("DeepMount00/GLiNER_ITA_SMALL")
 
 stripe.api_key  = os.getenv('STRIPE_SECRET_KEY')
 
