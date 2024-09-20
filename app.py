@@ -17,11 +17,11 @@ import urllib.request
 import uuid
 from flask import current_app
 import tweepy
-from utils import x
+from utils import x, pii
 import replicate
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForTokenClassification
 import json
-
+import torch
 from upstash_redis import Redis
 from upstash_ratelimit import FixedWindow, Ratelimit
 
@@ -468,19 +468,44 @@ def maestrale_generate(user, body):
     return messages    
 
 def gliner_extract(user, body):
-    messages = body
     print(body['text'])
     print(body['labels'])
 
+    apikey = redis.get(f'user:{user}:api')
+    limiting = ratelimit.limit(apikey)
+    if not limiting.allowed:
+        return {'error' : 'too many request per minute'}, 429
+    
     text = body['text']
     labels = body['labels']
-
+    
+    if (len(text) > 200):
+        return {'error' : 'text greater then 200'}, 500
+    
     entities = model_gliner.predict_entities(text, labels)
     print(entities)
 
     for entity in entities:
         print(entity["text"], "=>", entity["label"])
     return entities
+
+def anonymize(user, body):
+    print(body['text'])
+
+    apikey = redis.get(f'user:{user}:api')
+    limiting = ratelimit.limit(apikey)
+    if not limiting.allowed:
+        return {'error' : 'too many request per minute'}, 429
+    
+    text = body['text']
+    
+    if (len(text) > 200):
+        return {'error' : 'text greater then 200'}, 500
+    #mask_pii(text, tokenizer, device, model, aggregate_redaction=True):
+    pii_text = pii.mask_pii(text,pii_tokenizer, device,pii_model, aggregate_redaction=False)
+    print(pii_text)
+    return {'pii_text' : pii_text}
+
 
 
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
@@ -509,6 +534,14 @@ tokenizer = AutoTokenizer.from_pretrained("giux78/zefiro-7b-sft-qlora-ITA-v0.5",
 #                                          padding_side="left")
 
 model_gliner = GLiNER.from_pretrained("DeepMount00/GLiNER_ITA_SMALL")
+
+pii_model_name = "iiiorg/piiranha-v1-detect-personal-information"
+pii_tokenizer = AutoTokenizer.from_pretrained(pii_model_name)
+pii_model = AutoModelForTokenClassification.from_pretrained(pii_model_name)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+pii_model.to(device)
+#model_gliner = GLiNER.from_pretrained("DeepMount00/GLiNER_PII_ITA")
 
 stripe.api_key  = os.getenv('STRIPE_SECRET_KEY')
 
