@@ -357,15 +357,18 @@ paths:
                     score:
                       type: number                            
       requestBody:
-        description: the text to anonymize
+        description: the query and the chunk of text to rerank
         required: true
         content:
           application/json:
             schema:
-                type: array
-                items: 
-                  type: array
-                  items:
+                type: object
+                properties:
+                  docs:
+                    type: array
+                    items: 
+                      type: string
+                  query:
                     type: string
       security:
         - api_key: []

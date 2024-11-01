@@ -509,18 +509,29 @@ def anonymize(user, body):
 def rerank(user, body):
     print(body)
 
+    query = body['query']
+    docs = body['docs']
+
     apikey = redis.get(f'user:{user}:api')
     limiting = ratelimit.limit(apikey)
     if not limiting.allowed:
         return {'error' : 'too many request per minute'}, 429
-    pairs = [["中国的首都在哪儿","北京"], ["what is the capital of China?", "北京"], ["how to implement quick sort in python","Introduction of quick sort"]]
-    
+    pairs = []
+    for doc in docs:
+        pairs.append([doc, query])
+   
     with torch.no_grad():
         inputs = tokenizer(pairs, padding=True, truncation=True, return_tensors='pt', max_length=512)
         scores = model_reranker(**inputs, return_dict=True).logits.view(-1, ).float()
         print(scores)
- 
-    return []
+    
+    #scores = scores.sort(reverse=True)
+    results = []
+    for idx, score in enumerate(scores.tolist()):
+        results.append({'text': pairs[idx][0], 'score' : score })
+    
+    results  = sorted(results, key=lambda d: d['score'])
+    return results
 
 
 
@@ -571,7 +582,7 @@ model_name_or_path = "Alibaba-NLP/gte-multilingual-reranker-base"
 tokenizer_reranker = AutoTokenizer.from_pretrained(model_name_or_path)
 model_reranker = AutoModelForSequenceClassification.from_pretrained(
     model_name_or_path, trust_remote_code=True,
-    torch_dtype=torch.float16
+    torch_dtype=torch.float32
 )
 model_reranker.to(device)
 model_reranker.eval()
