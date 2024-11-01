@@ -579,6 +579,7 @@ x_client = tweepy.Client(
     access_token=os.getenv('X_ACCESS_TOKEN'), access_token_secret=os.getenv('X_ACCESS_TOKEN_SECRET')
 )
 
+'''
 model_name_or_path = "Alibaba-NLP/gte-multilingual-reranker-base"
 
 tokenizer_reranker = AutoTokenizer.from_pretrained(model_name_or_path)
@@ -588,7 +589,6 @@ model_reranker = AutoModelForSequenceClassification.from_pretrained(
 )
 model_reranker.to(device)
 model_reranker.eval()
-
-
+'''
 if __name__ == "__main__":
     app.run(f"{Path(__file__).stem}:app",host="0.0.0.0", port=80)
