@@ -507,6 +507,8 @@ def anonymize(user, body):
     return {'pii_text' : pii_text}
 
 def rerank(user, body):
+    return []
+    '''
     print(body)
 
     query = body['query']
@@ -532,7 +534,7 @@ def rerank(user, body):
     
     results  = sorted(results, key=lambda d: d['score'])
     return results
-
+    '''
 
 
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
