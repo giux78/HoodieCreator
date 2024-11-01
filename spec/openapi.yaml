@@ -336,6 +336,39 @@ paths:
                       type: string
       security:
         - api_key: []
+  /reranker/v0.1/rerank:
+    post:
+      summary: Rerank documents according to embedding
+      description: Reranke documents according to embedding
+      operationId: app.rerank
+      x-openai-isConsequential: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    text: 
+                      type: string
+                    score:
+                      type: number                            
+      requestBody:
+        description: the text to anonymize
+        required: true
+        content:
+          application/json:
+            schema:
+                type: array
+                items: 
+                  type: array
+                  items:
+                    type: string
+      security:
+        - api_key: []
 components:
   securitySchemes:
     api_key:

@@ -19,7 +19,7 @@ from flask import current_app
 import tweepy
 from utils import x, pii
 import replicate
-from transformers import AutoTokenizer, AutoModelForTokenClassification
+from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForSequenceClassification
 import json
 import torch
 from upstash_redis import Redis
@@ -506,6 +506,22 @@ def anonymize(user, body):
     print(pii_text)
     return {'pii_text' : pii_text}
 
+def rerank(user, body):
+    print(body)
+
+    apikey = redis.get(f'user:{user}:api')
+    limiting = ratelimit.limit(apikey)
+    if not limiting.allowed:
+        return {'error' : 'too many request per minute'}, 429
+    pairs = [["中国的首都在哪儿","北京"], ["what is the capital of China?", "北京"], ["how to implement quick sort in python","Introduction of quick sort"]]
+    
+    with torch.no_grad():
+        inputs = tokenizer(pairs, padding=True, truncation=True, return_tensors='pt', max_length=512)
+        scores = model_reranker(**inputs, return_dict=True).logits.view(-1, ).float()
+        print(scores)
+ 
+    return []
+
 
 
 app = connexion.FlaskApp(__name__, specification_dir="spec", )
@@ -549,6 +565,17 @@ x_client = tweepy.Client(
     consumer_key=os.getenv('X_CONSUMER_KEY'), consumer_secret=os.getenv('X_CONSUMER_SECRET'),
     access_token=os.getenv('X_ACCESS_TOKEN'), access_token_secret=os.getenv('X_ACCESS_TOKEN_SECRET')
 )
+
+model_name_or_path = "Alibaba-NLP/gte-multilingual-reranker-base"
+
+tokenizer_reranker = AutoTokenizer.from_pretrained(model_name_or_path)
+model_reranker = AutoModelForSequenceClassification.from_pretrained(
+    model_name_or_path, trust_remote_code=True,
+    torch_dtype=torch.float16
+)
+model_reranker.to(device)
+model_reranker.eval()
+
 
 if __name__ == "__main__":
     app.run(f"{Path(__file__).stem}:app",host="0.0.0.0", port=80)
