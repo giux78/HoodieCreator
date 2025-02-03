@@ -17,7 +17,7 @@ import urllib.request
 import uuid
 from flask import current_app
 import tweepy
-from utils import x, pii
+from utils import x, pii, texture
 import replicate
 from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModelForSequenceClassification
 import json
@@ -158,8 +158,8 @@ def create_product(user, body) -> str:
         f"/tmp/{name}.png"
         ) 
   
-    im = Image.open(f"/tmp/{name}.png") 
-
+    im = Image.open(f"/tmp/{name}.png")
+     
     in_mem_file = io.BytesIO()
     im.save(in_mem_file, format=im.format)
     in_mem_file.seek(0)
@@ -194,6 +194,8 @@ def create_product(user, body) -> str:
     #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(f"./data/hoodie-{color}-back.png") 
 
+    img_texture = texture.apply_texture_multiply(f"./data/hoodie-{color}-back.png",im,None,0.99)
+
     #img3 = bk_removed.resize((300,300))
     img3 = im.resize((300,300))
     imgbk.paste(img3, (250,280)) 
@@ -219,7 +221,8 @@ def create_product(user, body) -> str:
                         }
     
     in_mem_file = io.BytesIO()
-    imgbk.save(in_mem_file, format=imgbk.format)
+    #imgbk.save(in_mem_file, format=imgbk.format)
+    img_texture.save(in_mem_file, format=imgbk.format)
     in_mem_file.seek(0)
 
     s3.upload_fileobj(
