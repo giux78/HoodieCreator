@@ -194,7 +194,7 @@ def create_product(user, body) -> str:
     #im = Image.open(BytesIO(base64.b64decode(b64)))
     imgbk = Image.open(f"./data/hoodie-{color}-back.png") 
 
-    img_texture = texture.apply_texture_multiply(f"./data/hoodie-{color}-back.png",im,None,0.99)
+    img_texture = texture.apply_texture_multiply(f"./data/hoodie-{color}-back.png",f"/tmp/{name}.png",None,0.99)
 
     #img3 = bk_removed.resize((300,300))
     img3 = im.resize((300,300))
