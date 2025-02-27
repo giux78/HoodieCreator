@@ -422,8 +422,6 @@ def maestrale_generate(user, body):
         "Content-Type": "application/json"
     }
 
-# "model": "giux78/zefiro-7b-dpo-qlora-ITA-v0.7",
-
     payload = {
             "model": "mii-llm/maestrale-chat-v0.4-beta",
             "messages": messages,
@@ -437,7 +435,25 @@ def maestrale_generate(user, body):
             "top_p" : 0.95,
     }
 
-
+    
+    chat_completion = cerebrium_client.chat.completions.create(
+            messages=messages,
+            model="mii-llm/qwen-5588-dpo-iter10",
+            temperature=0.7,
+            stream=True
+        )
+    
+    generated_text = ""
+    for chunk in chat_completion:
+        # Extract the content from the chunk
+        if chunk.choices and len(chunk.choices) > 0:
+            # Access the delta content if it exists
+            text = chunk.choices[0].text
+            if text is not None:
+                # Append content to our collected string
+                generated_text += text
+    
+    '''
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
         generated_resp = response.json()
@@ -451,6 +467,9 @@ def maestrale_generate(user, body):
         messages.append({'role' : 'assistant', 'content' : generated_text})
     else:
         messages.append({'role' : 'assistant', 'content' : "aspetta circa un minuto che stiamo attivando le gpus necessarie"})
+    '''
+    
+    messages.append({'role' : 'assistant', 'content' : generated_text})
 
     if isinstance(messages, list):
         tokenFromMess = 0
@@ -547,6 +566,10 @@ load_dotenv()
 
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
 os.environ['REPLICATE_API_TOKEN'] = os.getenv("REPLICATE_API_KEY")
+cerebrium_client = OpenAI(
+    base_url="https://api.cortex.cerebrium.ai/v4/p-db750aab/serve-qwen/run",
+    api_key=os.getenv("CEREBRIUM"),
+)
 
 redis = Redis(url=os.getenv('UPSTASH_REDIS_REST_URL'), token=os.getenv("UPSTASH_REDIS_REST_TOKEN"))
 
